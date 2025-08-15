@@ -2,27 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import NavBar from "./components/NavBar";
-import IssueCard, { type Issue, type IssueAction } from "./components/IssueCard";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || ""; // same-origin by default
-
-async function fetchIssues(signal?: AbortSignal): Promise<Issue[]> {
-  const res = await fetch(`${API_BASE}/check`, { cache: "no-store", signal });
-  if (!res.ok) throw new Error(`Failed to fetch issues: ${res.status}`);
-  const data = await res.json();
-  // Accept either {issues: Issue[]} or Issue[] directly
-  return Array.isArray(data) ? data : data?.issues ?? [];
-}
-
-async function postReply(body: any): Promise<any> {
-  const res = await fetch(`${API_BASE}/reply`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(`Reply failed: ${res.status}`);
-  return res.json().catch(() => ({}));
-}
+import IssueCard from "./components/IssueCard";
+import type { Issue, IssueAction } from "./api/types";
+import { api } from "./api/client";
 
 export default function Home() {
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -37,7 +19,7 @@ export default function Home() {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     try {
-      const data = await fetchIssues(ctrl.signal);
+      const data = await api.check(ctrl.signal);
       setIssues(data);
     } catch (e: any) {
       if (e?.name !== "AbortError") setError(e?.message || "Failed to load");
@@ -58,7 +40,7 @@ export default function Home() {
   const handleExplainMore = useCallback(
     async (issue: Issue) => {
       try {
-        await postReply({ issueId: issue.id, type: "question", message: "Explain more" });
+        await api.reply({ issueId: issue.id, type: "question", message: "Explain more" });
         await load();
       } catch (e: any) {
         setError(e?.message || "Failed to send question");
@@ -70,7 +52,7 @@ export default function Home() {
   const handleIgnore = useCallback(
     async (issue: Issue) => {
       try {
-        await postReply({ issueId: issue.id, type: "ignore" });
+        await api.reply({ issueId: issue.id, type: "ignore" });
         await load();
       } catch (e: any) {
         setError(e?.message || "Failed to ignore");
@@ -82,7 +64,7 @@ export default function Home() {
   const handlePerformAction = useCallback(
     async (issue: Issue, action: IssueAction) => {
       try {
-        await postReply({ issueId: issue.id, type: "action", action: action.id });
+        await api.reply({ issueId: issue.id, type: "action", action: action.id });
         await load();
       } catch (e: any) {
         setError(e?.message || "Failed to perform action");
