@@ -1,4 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sherlog Observability Frontend (Next.js)
+
+AI-powered log monitoring and action suggestion system built with Next.js.
+
+## Overview
+
+This application provides a real-time interface for monitoring and responding to issues detected in log streams. The backend processes log input using AI (Google Gemini) to identify errors and suggest contextual actions. The frontend displays these issues as interactive cards with AI-generated action buttons.
+
+### How It Works
+
+1. **Log Processing**: Backend monitors log input (stdin) and detects error patterns
+2. **AI Analysis**: When errors are detected, AI analyzes the log context and suggests relevant actions
+3. **Dynamic Actions**: Based on log content, different action buttons appear (e.g., "I need to see a doctor" → "Ask doctor" button)
+4. **Action Execution**: Clicking action buttons triggers backend tools specific to the detected issue
+5. **Real-time Updates**: Frontend polls for new issues and updates the UI automatically
+
+### Available AI Tools
+
+The system can suggest various actions depending on the log context:
+- **restart_service** - Restart a specific service
+- **scale_deployment** - Scale deployment replicas
+- **open_ticket** - Create incident tickets with priority levels
+- **ask_doctor** - Medical consultation queries
+- **ask_emergency_doctor** - Emergency medical queries
+
+## Project Structure
+
+```
+src/app/
+├── api/
+│   ├── client.ts      # API client for backend communication
+│   └── types.ts       # TypeScript type definitions
+├── components/
+│   ├── IssueCard.tsx  # Issue card component with actions
+│   └── NavBar.tsx     # Navigation bar with polling controls
+├── page.tsx           # Main page with issue list
+└── globals.css        # Global styles
+```
 
 ## Getting Started
 
@@ -6,31 +43,22 @@ First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Backend Integration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The frontend expects a backend API with the following endpoints:
 
-## Learn More
+- **GET /check** - Returns list of unresolved issues
+- **POST /reply** - Marks issues as resolved and executes actions
 
-To learn more about Next.js, take a look at the following resources:
+## Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Real-time Monitoring**: Automatic polling for new issues (configurable interval)
+- **Contextual Actions**: AI-suggested actions based on log analysis
+- **Log Viewer**: Expandable log context for each issue
+- **Severity Levels**: Visual indicators (info, warn, error)
+- **Responsive Design**: Modern UI with Tailwind CSS
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

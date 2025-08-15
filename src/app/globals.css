@@ -37,3 +37,43 @@ body {
   background-attachment: fixed;
   min-height: 100vh;
 }
+
+/* Make all buttons show pointer cursor */
+button {
+  cursor: pointer;
+}
+
+.new-issue-card {
+  animation: blur-in 1s ease both;
+}
+
+@keyframes blur-in {
+  0% {
+    filter: blur(10px);
+    opacity: 0;
+  }
+  100% {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+/* Styled scrollbar for logs box */
+.logs-box {
+  scrollbar-width: thin;              /* Firefox */
+  scrollbar-color: #7a5d49 transparent;
+}
+.logs-box::-webkit-scrollbar {
+  width: 10px;
+}
+.logs-box::-webkit-scrollbar-track {
+  background: transparent;
+}
+.logs-box::-webkit-scrollbar-thumb {
+  background-color: #7a5d49;          /* warm brown */
+  border-radius: 8px;
+  border: 2px solid #2a1c15;          /* matches dark container */
+}
+.logs-box::-webkit-scrollbar-thumb:hover {
+  background-color: #9b745a;
+}

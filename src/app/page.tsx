@@ -10,7 +10,7 @@ export default function Home() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const pollMs = 5000;
+  const [pollMs, setPollMs] = useState<number>(5000);
   const abortRef = useRef<AbortController | null>(null);
 
   const load = useCallback(async () => {
@@ -30,21 +30,20 @@ export default function Home() {
 
   useEffect(() => {
     void load();
-    const id = setInterval(() => void load(), pollMs);
+    let id: ReturnType<typeof setInterval> | undefined;
+    if (pollMs > 0) {
+      id = setInterval(() => void load(), pollMs);
+    }
     return () => {
-      clearInterval(id);
+      if (id) clearInterval(id);
       abortRef.current?.abort();
     };
-  }, [load]);
+  }, [load, pollMs]);
 
-  const handleExplainMore = useCallback(
+  const handleDiscussDetails = useCallback(
     async (issue: Issue) => {
-      try {
-        await api.reply({ issueId: issue.id, type: "question", message: "Explain more" });
-        await load();
-      } catch (e: any) {
-        setError(e?.message || "Failed to send question");
-      }
+      // TODO: Implement
+      await load();
     },
     [load]
   );
@@ -52,7 +51,7 @@ export default function Home() {
   const handleIgnore = useCallback(
     async (issue: Issue) => {
       try {
-        await api.reply({ issueId: issue.id, type: "ignore" });
+        await api.reply({ issueId: issue.id, action: {id: "internal_ignore"} });
         await load();
       } catch (e: any) {
         setError(e?.message || "Failed to ignore");
@@ -64,7 +63,7 @@ export default function Home() {
   const handlePerformAction = useCallback(
     async (issue: Issue, action: IssueAction) => {
       try {
-        await api.reply({ issueId: issue.id, type: "action", action: action.id });
+        await api.reply({ issueId: issue.id, action: {id: action.id, args: action.args} });
         await load();
       } catch (e: any) {
         setError(e?.message || "Failed to perform action");
@@ -74,17 +73,17 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen [--header-h:calc(theme(spacing.12)+theme(spacing.2)*2)]">
-      <NavBar pollMs={pollMs} />
+    <div className="min-h-screen [--header-h:calc(theme(spacing.12)+theme(spacing.2)*2)] pt-[calc(var(--header-h)+8px)]">
+      <NavBar pollMs={pollMs} onChangePollMs={setPollMs} />
 
       {/* Floating top bar with horizontal cards left-to-right */}
       <div className="sticky top-[calc(var(--header-h)+24px)] z-20 px-5">
-        <div className="flex flex-wrap gap-3 pb-2">
+        <div className="flex flex-wrap items-stretch gap-3 pb-2">
           {issues.map((issue) => (
             <IssueCard
               key={issue.id}
               issue={issue}
-              onExplainMore={handleExplainMore}
+              onDiscussDetails={handleDiscussDetails}
               onIgnore={handleIgnore}
               onPerformAction={handlePerformAction}
             />
